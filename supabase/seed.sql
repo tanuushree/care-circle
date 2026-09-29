@@ -2,63 +2,10 @@
 -- Run after migrations. Replace UUIDs with real auth.users ids if testing
 -- against a real Supabase Auth setup.
 
--- -- Create test users in Supabase Auth
--- insert into auth.users (
---   id,
---   email,
---   encrypted_password,
---   email_confirmed_at,
---   created_at,
---   updated_at
--- )
--- values
---   (
---     '11111111-1111-1111-1111-111111111111',
---     'meera@test.local',
---     crypt('password123', gen_salt('bf')),
---     now(),
---     now(),
---     now()
---   ),
---   (
---     '22222222-2222-2222-2222-222222222222',
---     'arjun@test.local',
---     crypt('password123', gen_salt('bf')),
---     now(),
---     now(),
---     now()
---   ),
---   (
---     '33333333-3333-3333-3333-333333333333',
---     'priya@test.local',
---     crypt('password123', gen_salt('bf')),
---     now(),
---     now(),
---     now()
---   );
-
--- Create corresponding application users
--- insert into public.users (
---   id,
---   full_name,
---   phone_number
--- )
--- values
---   (
---     '11111111-1111-1111-1111-111111111111',
---     'Meera (Patient)',
---     '+911234500001'
---   ),
---   (
---     '22222222-2222-2222-2222-222222222222',
---     'Arjun (Son, Caregiver)',
---     '+911234500002'
---   ),
---   (
---     '33333333-3333-3333-3333-333333333333',
---     'Priya (Daughter, Caregiver)',
---     '+911234500003'
---   );
+insert into users (id, full_name, phone_number) values
+  ('11111111-1111-1111-1111-111111111111', 'Meera (Patient)', '+911234500001'),
+  ('22222222-2222-2222-2222-222222222222', 'Arjun (Son, Caregiver)', '+911234500002'),
+  ('33333333-3333-3333-3333-333333333333', 'Priya (Daughter, Caregiver)', '+911234500003');
 
 insert into care_circles (id, patient_user_id, name) values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'Meera''s Care Circle');
