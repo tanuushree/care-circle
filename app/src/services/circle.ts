@@ -45,39 +45,47 @@ export async function getMyCircleMemberships(
  * check constraint blocks that for caregivers).
  */
 export async function createCareCircle(
-  patientUserId: string,
+  _patientUserId: string,
   name: string
 ): Promise<CareCircleMembership> {
-  const { data: circle, error: circleError } = await supabase
-    .from('care_circles')
-    .insert({ patient_user_id: patientUserId, name })
-    .select()
+  const { data: circleId, error } = await supabase.rpc(
+    'create_care_circle',
+    {
+      p_name: name,
+    }
+  );
+
+  if (error) throw error;
+
+  const { data, error: membershipError } = await supabase
+    .from('circle_members')
+    .select(
+      `
+      circle_id,
+      role,
+      can_manage_medications,
+      can_view_health_data,
+      can_manage_members,
+      can_trigger_sos,
+      receives_sos_alerts,
+      care_circles ( name )
+    `
+    )
+    .eq('circle_id', circleId)
+    .eq('role', 'patient')
     .single();
 
-  if (circleError) throw circleError;
-
-  const { error: memberError } = await supabase.from('circle_members').insert({
-    circle_id: circle.id,
-    user_id: patientUserId,
-    role: 'patient',
-    can_manage_medications: true,
-    can_view_health_data: true,
-    can_manage_members: true,
-    can_trigger_sos: true,
-    receives_sos_alerts: true,
-  });
-
-  if (memberError) throw memberError;
+  if (membershipError) throw membershipError;
 
   return {
-    circle_id: circle.id,
-    circle_name: circle.name,
-    role: 'patient',
-    can_manage_medications: true,
-    can_view_health_data: true,
-    can_manage_members: true,
-    can_trigger_sos: true,
-    receives_sos_alerts: true,
+    circle_id: data.circle_id,
+    circle_name: (data as any).care_circles?.name ?? 'Care Circle',
+    role: data.role,
+    can_manage_medications: data.can_manage_medications,
+    can_view_health_data: data.can_view_health_data,
+    can_manage_members: data.can_manage_members,
+    can_trigger_sos: data.can_trigger_sos,
+    receives_sos_alerts: data.receives_sos_alerts,
   };
 }
 
