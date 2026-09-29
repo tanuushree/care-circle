@@ -100,3 +100,20 @@ export async function joinCareCircleWithCode(
     'Joining via invite code requires a server-side Edge Function (not yet built). See TODO in services/circle.ts.'
   );
 }
+
+export async function createCircleInvitation(
+  circleId: string
+): Promise<string> {
+  const { data, error } = await supabase.rpc(
+    'create_circle_invitation',
+    {
+      p_circle_id: circleId,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

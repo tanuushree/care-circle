@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useCareCircle } from '../contexts/CareCircleContext';
+import { createCircleInvitation } from '../services/circle';
 
 interface CircleMember {
   user_id: string;
@@ -12,6 +13,29 @@ interface CircleMember {
 export default function InviteMemberScreen({ navigation }: any) {
   const { activeCircle } = useCareCircle();
   const [circleMembers, setCircleMembers] = useState<CircleMember[]>([]);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+
+  const generateInvite = async () => {
+  if (!activeCircle) return;
+
+  try {
+    setGenerating(true);
+
+    const code = await createCircleInvitation(
+      activeCircle.circle_id
+    );
+
+    setInviteCode(code);
+    } catch (error: any) {
+        Alert.alert(
+        'Could not create invite',
+        error.message
+        );
+    } finally {
+        setGenerating(false);
+    }
+};
 
   useEffect(() => {
     if (!activeCircle) return;
@@ -88,12 +112,30 @@ export default function InviteMemberScreen({ navigation }: any) {
         want to add to this circle.
       </Text>
 
-      <Button
-        title="Generate Invite"
-        onPress={() => {
-          // We'll implement this next.
-        }}
-      />
+    {!inviteCode && (
+    <Button
+        title={generating ? 'Generating...' : 'Generate Invite'}
+        onPress={generateInvite}
+        disabled={generating}
+    />
+    )}
+
+    {inviteCode && (
+        <View style={styles.inviteBox}>
+            <Text style={styles.inviteLabel}>
+            Share this code with the caregiver
+            </Text>
+
+            <Text style={styles.inviteCode}>
+            {inviteCode}
+            </Text>
+
+            <Text>
+            This invitation is valid for 7 days.
+            </Text>
+        </View>
+    )}
+  
     </View>
   );
 }
@@ -145,5 +187,24 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
     paddingVertical: 8,
+  },
+  inviteBox: {
+    marginTop: 24,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+
+  inviteLabel: {
+    fontSize: 16,
+    color: '#666',
+  },
+
+  inviteCode: {
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: 2,
+    marginVertical: 12,
   },
 });
