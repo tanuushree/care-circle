@@ -14,6 +14,7 @@ export type RootStackParamList = {
   CircleSetup: undefined;
   Dashboard: undefined;
   InviteMembers: undefined;
+  JoinCircle: undefined;
   Prescriptions: undefined;
   Appointments: undefined;
   SOS: undefined;
@@ -62,6 +63,7 @@ export default function RootNavigator() {
     <Stack.Navigator initialRouteName="Dashboard">
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="InviteMembers" component={InviteMemberScreen} />
+      <Stack.Screen name="JoinCircle" component={CircleSetupScreen} options={{ title: 'Join a Circle' }} />
       <Stack.Screen name="Prescriptions" component={PrescriptionsScreen} />
       <Stack.Screen name="Appointments" component={AppointmentsScreen} />
       <Stack.Screen name="SOS" component={SOSScreen} options={{ presentation: 'modal' }} />
