@@ -1,22 +1,51 @@
 import asyncio
+import base64
 import json
 import os
 
 from dotenv import load_dotenv
 from fastmcp import Client
 from openai import OpenAI
-
+from supabase import create_client, Client as SupabaseClient
 
 load_dotenv()
 
 mcp_server_url = os.environ["MCP_SERVER_URL"]
 circle_id = os.environ["CIRCLE_ID"]
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_ANON_KEY = os.environ["SUPABASE_ANON_KEY"]
+email = os.environ["ALEXA_EMAIL"]
+password = os.environ["ALEXA_PASSWORD"]
 
 groq = OpenAI(
     api_key=os.environ["GROQ_API_KEY"],
     base_url="https://api.groq.com/openai/v1",
 )
 
+supabase: SupabaseClient = create_client(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+)
+
+auth_response = supabase.auth.sign_in_with_password({
+    "email": email,
+    "password": password,
+})
+
+if not auth_response.user or not auth_response.session:
+    raise Exception("Supabase login failed")
+
+user_id = auth_response.user.id
+access_token = auth_response.session.access_token
+
+header = access_token.split(".")[0]
+header += "=" * (-len(header) % 4)
+
+decoded_header = base64.urlsafe_b64decode(header)
+print("JWT header:", decoded_header.decode())
+
+print(f"✓ Authenticated as: {email}")
+print(f"✓ User ID: {user_id}")
 
 def build_tool_definitions(tools):
     definitions = []
@@ -38,7 +67,7 @@ def build_tool_definitions(tools):
 
 async def main():
 
-    async with Client(mcp_server_url) as mcp:
+    async with Client(mcp_server_url, auth=access_token,) as mcp:
 
         # Discover tools from the MCP server
         tools = await mcp.list_tools()

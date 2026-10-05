@@ -12,6 +12,7 @@ Expose locally for Alexa+ dev testing:
 import os
 from dotenv import load_dotenv
 from fastmcp import FastMCP
+from auth import SupabaseTokenVerifier
 
 from tools.log_medication_taken import log_medication_taken
 from tools.get_schedule import get_medication_schedule
@@ -22,7 +23,8 @@ from tools.trigger_sos import trigger_sos
 
 load_dotenv()
 
-mcp = FastMCP("care-circle")
+auth = SupabaseTokenVerifier()
+mcp = FastMCP("care-circle", auth=auth,)
 
 
 @mcp.tool()
