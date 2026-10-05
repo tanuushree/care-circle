@@ -6,13 +6,11 @@ Streamable HTTP, per MCP spec 2025-11-25.
 Run locally:
     python src/server.py
 
-Expose locally for Alexa+ dev testing:
-    cloudflared tunnel --url http://localhost:8000
 """
 import os
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from auth import SupabaseTokenVerifier
+from circle_auth.auth import SupabaseTokenVerifier
 
 from tools.log_medication_taken import log_medication_taken
 from tools.get_schedule import get_medication_schedule
@@ -20,6 +18,9 @@ from tools.get_upcoming_appointments import get_upcoming_appointments
 from tools.get_refill_status import get_refill_status
 from tools.add_care_note import add_care_note
 from tools.trigger_sos import trigger_sos
+
+from circle_auth.auth_context import get_authenticated_user_id
+from circle_auth.circle_context import get_user_circle_id
 
 load_dotenv()
 
@@ -34,8 +35,10 @@ def log_medication(circle_id: str, drug_name: str, user_id: str) -> dict:
 
 
 @mcp.tool()
-def get_schedule(circle_id: str) -> dict:
-    """Get today's medication schedule for a care circle."""
+def get_schedule() -> dict:
+    """Get today's medication schedule for the authenticated user's care circle."""
+    user_id = get_authenticated_user_id()
+    circle_id = get_user_circle_id(user_id)
     return get_medication_schedule(circle_id)
 
 

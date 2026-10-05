@@ -11,7 +11,6 @@ from supabase import create_client, Client as SupabaseClient
 load_dotenv()
 
 mcp_server_url = os.environ["MCP_SERVER_URL"]
-circle_id = os.environ["CIRCLE_ID"]
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_ANON_KEY = os.environ["SUPABASE_ANON_KEY"]
 email = os.environ["ALEXA_EMAIL"]
@@ -37,12 +36,6 @@ if not auth_response.user or not auth_response.session:
 
 user_id = auth_response.user.id
 access_token = auth_response.session.access_token
-
-header = access_token.split(".")[0]
-header += "=" * (-len(header) % 4)
-
-decoded_header = base64.urlsafe_b64decode(header)
-print("JWT header:", decoded_header.decode())
 
 print(f"✓ Authenticated as: {email}")
 print(f"✓ User ID: {user_id}")
@@ -136,17 +129,6 @@ async def main():
 
                     tool_name = tool_call.function.name
                     arguments = json.loads(tool_call.function.arguments)
-
-                    # The circle is fixed for this simulation.
-                    if "circle_id" in [
-                        property_name
-                        for tool in tools
-                        if tool.name == tool_name
-                        for property_name in tool.inputSchema.get(
-                            "properties", {}
-                        )
-                    ]:
-                        arguments["circle_id"] = circle_id
 
                     print(f"\n🔧 Calling MCP tool: {tool_name}")
                     print(f"📦 Arguments: {arguments}")
